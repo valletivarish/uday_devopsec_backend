@@ -269,7 +269,7 @@ const deleteOrder = async (req, res, next) => {
  */
 const processPayment = async (req, res, next) => {
   try {
-    const paymentMethod = req.body.paymentMethod || 'credit_card';
+    const paymentMethod = req.body?.paymentMethod || 'credit_card';
     const order = await orderService.processOrderPayment(parseInt(req.params.id), paymentMethod);
 
     return res.json({
