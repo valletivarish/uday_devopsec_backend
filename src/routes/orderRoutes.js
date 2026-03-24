@@ -26,8 +26,8 @@ router.get('/', paginationRules, orderController.getAllOrders);
 // GET    /api/orders/:id          — All authenticated users
 router.get('/:id', idParamRule, orderController.getOrderById);
 
-// POST   /api/orders              — Admin and Manager only
-router.post('/', authorize('admin', 'manager'), orderCreateRules, orderController.createOrder);
+// POST   /api/orders              — All authenticated users (viewers can place orders)
+router.post('/', orderCreateRules, orderController.createOrder);
 
 // PUT    /api/orders/:id          — Admin and Manager only
 router.put('/:id', authorize('admin', 'manager'), idParamRule, orderController.updateOrder);
