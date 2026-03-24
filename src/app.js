@@ -46,6 +46,16 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Version endpoint — used to verify CI/CD deployments
+app.get('/api/version', (req, res) => {
+  res.json({
+    success: true,
+    version: '1.1.0',
+    deployedAt: '2026-03-24T08:30:00Z',
+    commit: process.env.GIT_COMMIT || 'local',
+  });
+});
+
 // ── 404 Handler ──────────────────────────────────────────────────────
 
 // Catch requests to undefined routes and return a descriptive error
