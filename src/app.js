@@ -55,10 +55,29 @@ app.get('/api/health', (req, res) => {
 app.get('/api/version', (req, res) => {
   res.json({
     success: true,
-    version: '1.1.0',
-    deployedAt: '2026-03-24T08:30:00Z',
+    version: '1.2.0',
+    deployedAt: new Date().toISOString(),
     commit: process.env.GIT_COMMIT || 'local',
   });
+});
+
+// Stats endpoint — returns summary counts for the dashboard
+app.get('/api/stats', authenticate, async (req, res) => {
+  try {
+    const { Product, Customer, Order, Inventory } = require('./models');
+    const [products, customers, orders, inventory] = await Promise.all([
+      Product.count({ where: { isActive: true } }),
+      Customer.count({ where: { isActive: true } }),
+      Order.count(),
+      Inventory.count(),
+    ]);
+    res.json({
+      success: true,
+      data: { products, customers, orders, inventory },
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to fetch stats' });
+  }
 });
 
 // ── 404 Handler ──────────────────────────────────────────────────────
