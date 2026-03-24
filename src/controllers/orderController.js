@@ -189,6 +189,15 @@ const createOrder = async (req, res, next) => {
     await transaction.commit();
   } catch (error) {
     await transaction.rollback();
+
+    // Return business logic errors (e.g., insufficient stock) as 400 with clear message
+    if (error.message && (error.message.includes('Insufficient stock') || error.message.includes('No inventory record'))) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+      });
+    }
+
     return next(error);
   }
 
