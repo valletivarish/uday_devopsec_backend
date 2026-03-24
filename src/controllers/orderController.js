@@ -111,12 +111,13 @@ const getOrderById = async (req, res, next) => {
  */
 const createOrder = async (req, res, next) => {
   const transaction = await sequelize.transaction();
+  let order, customer, orderNumber;
 
   try {
     const { customerId, items, shippingStreet, shippingCity, shippingState, shippingPostcode, shippingCountry } = req.body;
 
     // Step 1: Verify customer exists and is active
-    const customer = await Customer.findByPk(customerId, { transaction });
+    customer = await Customer.findByPk(customerId, { transaction });
     if (!customer || !customer.isActive) {
       await transaction.rollback();
       return res.status(400).json({
@@ -157,10 +158,10 @@ const createOrder = async (req, res, next) => {
     const totals = orderService.calculateOrderTotals(orderItems);
 
     // Step 5: Generate a unique order number and create the order record
-    const orderNumber = await orderService.generateOrderNumber();
+    orderNumber = await orderService.generateOrderNumber();
 
     // Use customer's default shipping address if none was provided with the order
-    const order = await Order.create({
+    order = await Order.create({
       orderNumber,
       customerId,
       status: 'PLACED',
@@ -186,29 +187,33 @@ const createOrder = async (req, res, next) => {
     }
 
     await transaction.commit();
-
-    // Step 6: Send confirmation notification (non-blocking)
-    await notificationService.sendOrderStatusNotification(order, 'PLACED', customer);
-
-    // Reload the order with all associations for the response
-    const fullOrder = await Order.findByPk(order.id, {
-      include: [
-        { model: Customer, as: 'customer' },
-        { model: OrderItem, as: 'items' },
-      ],
-    });
-
-    console.log(`[Order] Created order ${orderNumber} for customer ${customer.firstName} ${customer.lastName}`);
-
-    return res.status(201).json({
-      success: true,
-      message: 'Order created successfully',
-      data: fullOrder,
-    });
   } catch (error) {
     await transaction.rollback();
-    next(error);
+    return next(error);
   }
+
+  // Step 6: Send confirmation notification (non-blocking, outside transaction)
+  try {
+    await notificationService.sendOrderStatusNotification(order, 'PLACED', customer);
+  } catch (notifErr) {
+    console.error('[Order] Notification failed (non-blocking):', notifErr.message);
+  }
+
+  // Reload the order with all associations for the response
+  const fullOrder = await Order.findByPk(order.id, {
+    include: [
+      { model: Customer, as: 'customer' },
+      { model: OrderItem, as: 'items' },
+    ],
+  });
+
+  console.log(`[Order] Created order ${orderNumber} for customer ${customer.firstName} ${customer.lastName}`);
+
+  return res.status(201).json({
+    success: true,
+    message: 'Order created successfully',
+    data: fullOrder,
+  });
 };
 
 /**
