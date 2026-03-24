@@ -22,7 +22,8 @@ const getAllCustomers = async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
 
-    const where = {};
+    // Default to showing only active customers unless explicitly requested
+    const where = { isActive: true };
 
     // Search across multiple name/email fields simultaneously
     if (req.query.search) {
@@ -150,12 +151,13 @@ const deleteCustomer = async (req, res, next) => {
     }
 
     await customer.update({ isActive: false });
+    await customer.destroy(); // Soft delete via paranoid — sets deletedAt
 
-    console.log(`[Customer] Deactivated customer "${customer.firstName} ${customer.lastName}" (ID: ${customer.id})`);
+    console.log(`[Customer] Soft-deleted customer "${customer.firstName} ${customer.lastName}" (ID: ${customer.id})`);
 
     return res.json({
       success: true,
-      message: 'Customer deactivated successfully',
+      message: 'Customer deleted successfully',
     });
   } catch (error) {
     next(error);

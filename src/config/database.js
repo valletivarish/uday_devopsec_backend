@@ -27,9 +27,19 @@ const sequelize = new Sequelize(
       acquire: 30000, // Maximum time (ms) to acquire a connection before throwing error
       idle: 10000,   // Maximum time (ms) a connection can be idle before being released
     },
+    // Enable SSL for RDS connections in production
+    ...(process.env.NODE_ENV === 'production' && {
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false,
+        },
+      },
+    }),
     define: {
       timestamps: true,  // Automatically add createdAt and updatedAt fields
       underscored: false, // Use camelCase for auto-generated fields
+      paranoid: true,    // Enable soft delete globally — adds deletedAt column
     },
   }
 );

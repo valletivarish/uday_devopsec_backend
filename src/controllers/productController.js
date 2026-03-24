@@ -22,8 +22,8 @@ const getAllProducts = async (req, res, next) => {
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
 
-    // Build dynamic WHERE clause based on query parameters
-    const where = {};
+    // Default to showing only active products unless explicitly requested
+    const where = { isActive: true };
 
     if (req.query.search) {
       where.name = { [Op.iLike]: `%${req.query.search}%` };
@@ -151,14 +151,15 @@ const deleteProduct = async (req, res, next) => {
       });
     }
 
-    // Soft delete — mark as inactive rather than removing the record
+    // Soft delete — mark as inactive and set deletedAt via paranoid
     await product.update({ isActive: false });
+    await product.destroy();
 
-    console.log(`[Product] Deactivated product "${product.name}" (ID: ${product.id})`);
+    console.log(`[Product] Soft-deleted product "${product.name}" (ID: ${product.id})`);
 
     return res.json({
       success: true,
-      message: 'Product deactivated successfully',
+      message: 'Product deleted successfully',
     });
   } catch (error) {
     next(error);

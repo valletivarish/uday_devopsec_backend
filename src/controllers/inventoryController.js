@@ -156,8 +156,7 @@ const updateInventory = async (req, res, next) => {
 
 /**
  * DELETE /api/inventory/:id
- * Deletes an inventory record. This is a hard delete since inventory
- * records do not need to be preserved for historical purposes.
+ * Soft-deletes an inventory record by setting deletedAt (paranoid mode).
  */
 const deleteInventory = async (req, res, next) => {
   try {
