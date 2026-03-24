@@ -92,6 +92,17 @@ const getProductById = async (req, res, next) => {
  */
 const createProduct = async (req, res, next) => {
   try {
+    // Auto-generate SKU if not provided
+    if (!req.body.sku) {
+      const prefixes = {
+        ELECTRONICS: 'ELEC', CLOTHING: 'CLO', FOOD: 'FOOD',
+        BOOKS: 'BOOK', HOME: 'HOME', SPORTS: 'SPT', OTHER: 'OTH',
+      };
+      const prefix = prefixes[req.body.category] || 'GEN';
+      const suffix = Date.now().toString(36).toUpperCase().slice(-5);
+      req.body.sku = `${prefix}-${suffix}`;
+    }
+
     const product = await Product.create(req.body);
 
     console.log(`[Product] Created product "${product.name}" (ID: ${product.id})`);

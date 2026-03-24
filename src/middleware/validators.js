@@ -45,9 +45,8 @@ const productCreateRules = [
     .isIn(['ELECTRONICS', 'CLOTHING', 'FOOD', 'BOOKS', 'HOME', 'SPORTS', 'OTHER'])
     .withMessage('Invalid product category'),
   body('sku')
-    .trim()
-    .notEmpty()
-    .withMessage('SKU is required'),
+    .optional()
+    .trim(),
   body('description')
     .optional()
     .trim(),
