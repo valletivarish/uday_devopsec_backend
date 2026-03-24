@@ -34,6 +34,10 @@ const startServer = async () => {
     await sequelize.sync({ alter: true });
     console.log('[Database] All models synchronised successfully.');
 
+    // Seed demo data if tables are empty
+    const { seedAll } = require('./src/seedData');
+    await seedAll();
+
     // Start the HTTP server
     app.listen(PORT, () => {
       console.log(`\n======================================================`);

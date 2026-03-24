@@ -2,8 +2,7 @@
  * Order Routes
  *
  * Defines REST API endpoints for order management and workflow operations.
- * CRUD endpoints handle basic order data, while workflow endpoints manage
- * the order lifecycle (payment, shipping, delivery, cancellation).
+ * Role-based access: admin/manager can create/update/workflow, only admin can delete.
  *
  * Author: Uday Kiran Reddy Dodda (x25166484)
  */
@@ -11,6 +10,7 @@
 const express = require('express');
 const router = express.Router();
 const orderController = require('../controllers/orderController');
+const { authorize } = require('../middleware/auth');
 const {
   orderCreateRules,
   orderPaymentRules,
@@ -20,33 +20,26 @@ const {
 
 // ── CRUD Endpoints ───────────────────────────────────────────────────
 
-// GET    /api/orders              — List all orders (paginated, filterable)
+// GET    /api/orders              — All authenticated users
 router.get('/', paginationRules, orderController.getAllOrders);
 
-// GET    /api/orders/:id          — Get a single order with full details
+// GET    /api/orders/:id          — All authenticated users
 router.get('/:id', idParamRule, orderController.getOrderById);
 
-// POST   /api/orders              — Create a new order with line items
-router.post('/', orderCreateRules, orderController.createOrder);
+// POST   /api/orders              — Admin and Manager only
+router.post('/', authorize('admin', 'manager'), orderCreateRules, orderController.createOrder);
 
-// PUT    /api/orders/:id          — Update order details (not status)
-router.put('/:id', idParamRule, orderController.updateOrder);
+// PUT    /api/orders/:id          — Admin and Manager only
+router.put('/:id', authorize('admin', 'manager'), idParamRule, orderController.updateOrder);
 
-// DELETE /api/orders/:id          — Cancel an order
-router.delete('/:id', idParamRule, orderController.deleteOrder);
+// DELETE /api/orders/:id          — Admin only
+router.delete('/:id', authorize('admin'), idParamRule, orderController.deleteOrder);
 
-// ── Workflow Endpoints ───────────────────────────────────────────────
+// ── Workflow Endpoints — Admin and Manager only ─────────────────────
 
-// POST   /api/orders/:id/process-payment — Process payment (PLACED -> PAID)
-router.post('/:id/process-payment', idParamRule, orderPaymentRules, orderController.processPayment);
-
-// POST   /api/orders/:id/ship            — Ship order (PAID -> SHIPPED)
-router.post('/:id/ship', idParamRule, orderController.shipOrder);
-
-// POST   /api/orders/:id/deliver         — Deliver order (SHIPPED -> DELIVERED)
-router.post('/:id/deliver', idParamRule, orderController.deliverOrder);
-
-// POST   /api/orders/:id/cancel          — Cancel order (PLACED/PAID -> CANCELLED)
-router.post('/:id/cancel', idParamRule, orderController.cancelOrder);
+router.post('/:id/process-payment', authorize('admin', 'manager'), idParamRule, orderPaymentRules, orderController.processPayment);
+router.post('/:id/ship', authorize('admin', 'manager'), idParamRule, orderController.shipOrder);
+router.post('/:id/deliver', authorize('admin', 'manager'), idParamRule, orderController.deliverOrder);
+router.post('/:id/cancel', authorize('admin', 'manager'), idParamRule, orderController.cancelOrder);
 
 module.exports = router;

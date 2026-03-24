@@ -113,7 +113,8 @@ jobs:
 
       - name: Package Application
         run: |
-          tar --exclude='node_modules' --exclude='.git' --exclude='coverage' --exclude='.env' -czf backend.tar.gz .
+          tar --exclude='node_modules' --exclude='.git' --exclude='coverage' --exclude='.env' --exclude='backend.tar.gz' -czf /tmp/backend.tar.gz .
+          mv /tmp/backend.tar.gz backend.tar.gz
 
       - name: Upload to EC2
         run: |

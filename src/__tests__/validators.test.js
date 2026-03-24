@@ -11,7 +11,18 @@
  */
 
 const request = require('supertest');
+const jwt = require('jsonwebtoken');
 const app = require('../app');
+
+// Generate a valid admin JWT for authenticated test requests
+const JWT_SECRET = process.env.JWT_SECRET || 'order_processing_secret_key_2026';
+const adminToken = jwt.sign(
+  { id: 1, email: 'admin@opm.com', name: 'Admin', role: 'admin' },
+  JWT_SECRET,
+  { expiresIn: '1h' }
+);
+
+const authHeader = `Bearer ${adminToken}`;
 
 describe('Input Validation', () => {
   // ── Product Validation ──────────────────────────────────────────
@@ -19,6 +30,7 @@ describe('Input Validation', () => {
     it('should reject a product with missing required fields', async () => {
       const res = await request(app)
         .post('/api/products')
+        .set('Authorization', authHeader)
         .send({});
 
       expect(res.statusCode).toBe(400);
@@ -31,6 +43,7 @@ describe('Input Validation', () => {
     it('should reject a product with a negative price', async () => {
       const res = await request(app)
         .post('/api/products')
+        .set('Authorization', authHeader)
         .send({
           name: 'Test Product',
           price: -10,
@@ -49,6 +62,7 @@ describe('Input Validation', () => {
     it('should reject a product with an invalid category', async () => {
       const res = await request(app)
         .post('/api/products')
+        .set('Authorization', authHeader)
         .send({
           name: 'Test Product',
           price: 19.99,
@@ -67,6 +81,7 @@ describe('Input Validation', () => {
     it('should reject a product with a name shorter than 3 characters', async () => {
       const res = await request(app)
         .post('/api/products')
+        .set('Authorization', authHeader)
         .send({
           name: 'AB',
           price: 9.99,
@@ -88,6 +103,7 @@ describe('Input Validation', () => {
     it('should reject a customer with an invalid email', async () => {
       const res = await request(app)
         .post('/api/customers')
+        .set('Authorization', authHeader)
         .send({
           firstName: 'John',
           lastName: 'Doe',
@@ -110,6 +126,7 @@ describe('Input Validation', () => {
     it('should reject a customer with missing shipping address fields', async () => {
       const res = await request(app)
         .post('/api/customers')
+        .set('Authorization', authHeader)
         .send({
           firstName: 'Jane',
           lastName: 'Smith',
@@ -126,6 +143,7 @@ describe('Input Validation', () => {
     it('should reject an order with no items', async () => {
       const res = await request(app)
         .post('/api/orders')
+        .set('Authorization', authHeader)
         .send({
           customerId: 1,
           items: [],
@@ -142,6 +160,7 @@ describe('Input Validation', () => {
     it('should reject an order without a customer ID', async () => {
       const res = await request(app)
         .post('/api/orders')
+        .set('Authorization', authHeader)
         .send({
           items: [{ productId: 1, quantity: 2 }],
         });

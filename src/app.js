@@ -25,16 +25,21 @@ app.use(express.urlencoded({ extended: true }));
 
 // ── API Routes ───────────────────────────────────────────────────────
 
+const authRoutes = require('./routes/authRoutes');
 const productRoutes = require('./routes/productRoutes');
 const customerRoutes = require('./routes/customerRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const inventoryRoutes = require('./routes/inventoryRoutes');
+const { authenticate, authorize } = require('./middleware/auth');
 
-// Mount entity routes under the /api prefix
-app.use('/api/products', productRoutes);
-app.use('/api/customers', customerRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/inventory', inventoryRoutes);
+// Public routes — no authentication required
+app.use('/api/auth', authRoutes);
+
+// Protected routes — require JWT authentication
+app.use('/api/products', authenticate, productRoutes);
+app.use('/api/customers', authenticate, customerRoutes);
+app.use('/api/orders', authenticate, orderRoutes);
+app.use('/api/inventory', authenticate, inventoryRoutes);
 
 // Health check endpoint — useful for load balancers and monitoring
 app.get('/api/health', (req, res) => {

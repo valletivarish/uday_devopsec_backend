@@ -16,6 +16,7 @@ const Customer = require('./Customer')(sequelize);
 const Order = require('./Order')(sequelize);
 const OrderItem = require('./OrderItem')(sequelize);
 const InventoryItem = require('./InventoryItem')(sequelize);
+const User = require('./User')(sequelize);
 
 // ── Association Definitions ──────────────────────────────────────────
 // Each association is defined in both directions so Sequelize can
@@ -44,4 +45,5 @@ module.exports = {
   Order,
   OrderItem,
   InventoryItem,
+  User,
 };
