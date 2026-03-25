@@ -35,11 +35,14 @@ router.put('/:id', authorize('admin', 'manager'), idParamRule, orderController.u
 // DELETE /api/orders/:id          — Admin only
 router.delete('/:id', authorize('admin'), idParamRule, orderController.deleteOrder);
 
-// ── Workflow Endpoints — Admin and Manager only ─────────────────────
+// ── Workflow Endpoints ───────────────────────────────────────────────
 
-router.post('/:id/process-payment', authorize('admin', 'manager'), idParamRule, orderPaymentRules, orderController.processPayment);
+// Process payment — all roles (viewer can pay their own order)
+router.post('/:id/process-payment', idParamRule, orderPaymentRules, orderController.processPayment);
+// Cancel — all roles (viewer can cancel their own PLACED order)
+router.post('/:id/cancel', idParamRule, orderController.cancelOrder);
+// Ship and Deliver — admin and manager only
 router.post('/:id/ship', authorize('admin', 'manager'), idParamRule, orderController.shipOrder);
 router.post('/:id/deliver', authorize('admin', 'manager'), idParamRule, orderController.deliverOrder);
-router.post('/:id/cancel', authorize('admin', 'manager'), idParamRule, orderController.cancelOrder);
 
 module.exports = router;
