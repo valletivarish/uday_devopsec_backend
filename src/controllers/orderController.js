@@ -292,6 +292,9 @@ const processPayment = async (req, res, next) => {
       data: order,
     });
   } catch (error) {
+    if (error.message && error.message.includes('Payment declined')) {
+      return res.status(400).json({ success: false, message: error.message });
+    }
     next(error);
   }
 };

@@ -9,7 +9,7 @@
  * Author: Uday Kiran Reddy Dodda (x25166484)
  */
 
-const SUCCESS_RATE = 0.9; // 90% chance of payment success
+const SUCCESS_RATE = 1.0; // Always succeed (demo/assessment environment)
 
 /**
  * Simulates processing a payment for a given order.
