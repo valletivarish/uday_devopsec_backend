@@ -10,6 +10,9 @@
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
 
+if (!process.env.JWT_SECRET) {
+  console.warn('[Security] WARNING: JWT_SECRET not set in environment variables');
+}
 const JWT_SECRET = process.env.JWT_SECRET || 'order_processing_secret_key_2026';
 
 /**
@@ -54,7 +57,7 @@ const register = async (req, res, next) => {
     const token = jwt.sign(
       { id: user.id, email: user.email, name: user.name, role: user.role },
       JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: '24h', algorithm: 'HS256' }
     );
 
     console.log(`[Auth] New user registered: "${user.name}" (${user.email})`);
@@ -102,7 +105,7 @@ const login = async (req, res, next) => {
     const token = jwt.sign(
       { id: user.id, email: user.email, name: user.name, role: user.role },
       JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: '24h', algorithm: 'HS256' }
     );
 
     console.log(`[Auth] User "${user.name}" (${user.role}) logged in`);

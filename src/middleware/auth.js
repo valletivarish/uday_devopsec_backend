@@ -8,6 +8,9 @@
 
 const jwt = require('jsonwebtoken');
 
+if (!process.env.JWT_SECRET) {
+  console.warn('[Security] WARNING: JWT_SECRET not set in environment variables');
+}
 const JWT_SECRET = process.env.JWT_SECRET || 'order_processing_secret_key_2026';
 
 const authenticate = (req, res, next) => {
@@ -18,7 +21,7 @@ const authenticate = (req, res, next) => {
 
   try {
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
     req.user = decoded;
     next();
   } catch (err) {
