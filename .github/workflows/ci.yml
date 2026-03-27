@@ -86,8 +86,8 @@ jobs:
           node -e "const app = require('./src/app'); app.listen(5000, () => console.log('CI server on 5000'));" &
           sleep 3
           curl -sf http://localhost:5000/api/health || echo "Server not ready"
-          mkdir -p /tmp/zap-wrk
-          docker run --rm --network host -v /tmp/zap-wrk:/zap/wrk ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:5000/api/health -d || true
+          mkdir -p /tmp/zap-wrk && chmod 777 /tmp/zap-wrk
+          docker run --rm --network host -v /tmp/zap-wrk:/zap/wrk:rw ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t http://localhost:5000/api/health -d || true
           kill %1 || true
         continue-on-error: true
         env:
